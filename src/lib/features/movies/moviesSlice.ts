@@ -70,6 +70,8 @@ export const searchMovies = createAsyncThunk(
     year?: string; 
     type?: 'movie' | 'series' | 'episode';
   }) => {
+    
+    
     if (!query.trim() || query.trim().length < 2) {
       return { Search: [], totalResults: '0', Response: 'True' };
     }
@@ -83,8 +85,13 @@ export const searchMovies = createAsyncThunk(
     if (year) params.append('y', year);
     if (type) params.append('type', type);
     
-    const response = await fetch(`https://www.omdbapi.com/?${params}`);
+    const url = `https://www.omdbapi.com/?${params}`;
+    console.log('Search URL:', url);
+    
+    const response = await fetch(url);
     const data = await response.json();
+    
+    console.log('Search response:', data);
     
     if (data.Response === 'False') {
       throw new Error(data.Error || 'Failed to search movies');
