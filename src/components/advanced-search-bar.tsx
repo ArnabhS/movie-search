@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Search, Filter, X, Calendar, Film } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -32,29 +32,48 @@ export function AdvancedSearchBar({ onSearch, initialFilters = { query: '' } }: 
   const [filters, setFilters] = useState<SearchFilters>(initialFilters);
   const [showFilters, setShowFilters] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const onSearchRef = useRef(onSearch);
+
+  // Update the ref when onSearch changes
+  useEffect(() => {
+    onSearchRef.current = onSearch;
+  }, [onSearch]);
+
+  // Debounced search effect
+  useEffect(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    debounceRef.current = setTimeout(() => {
+      // Only search if query is at least 2 characters or empty (for clearing)
+      if (filters.query.length >= 2 || filters.query.length === 0) {
+        onSearchRef.current(filters);
+      }
+    }, 300); // 300ms debounce delay
+
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [filters]);
 
   const handleQueryChange = (query: string) => {
-    const newFilters = { ...filters, query };
-    setFilters(newFilters);
-    onSearch(newFilters);
+    setFilters(prev => ({ ...prev, query }));
   };
 
   const handleFilterChange = (key: keyof SearchFilters, value: string | undefined) => {
-    const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-    onSearch(newFilters);
+    setFilters(prev => ({ ...prev, [key]: value }));
   };
 
   const clearFilters = () => {
-    const newFilters = { query: filters.query };
-    setFilters(newFilters);
-    onSearch(newFilters);
+    setFilters(prev => ({ query: prev.query }));
   };
 
   const clearAll = () => {
-    const newFilters = { query: '' };
-    setFilters(newFilters);
-    onSearch(newFilters);
+    setFilters({ query: '' });
   };
 
   const activeFiltersCount = Object.values(filters).filter(v => v && v !== filters.query).length;
@@ -72,12 +91,14 @@ export function AdvancedSearchBar({ onSearch, initialFilters = { query: '' } }: 
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Search for movies, TV series..."
+            placeholder="Search for movies, TV series... (min 2 characters)"
             value={filters.query}
             onChange={(e) => handleQueryChange(e.target.value)}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            className="pl-12 pr-20 h-14 text-lg bg-background/80 backdrop-blur border-2 focus:border-primary/50 transition-all duration-200"
+            className={`pl-12 pr-20 h-14 text-lg bg-background/80 backdrop-blur border-2 focus:border-primary/50 transition-all duration-200 ${
+              filters.query.length > 0 && filters.query.length < 2 ? 'border-yellow-500/50' : ''
+            }`}
           />
           
           <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
@@ -107,6 +128,17 @@ export function AdvancedSearchBar({ onSearch, initialFilters = { query: '' } }: 
             )}
           </div>
         </div>
+        
+        {/* Minimum character warning */}
+        {filters.query.length > 0 && filters.query.length < 2 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-2 text-sm text-yellow-600 dark:text-yellow-400"
+          >
+            Type at least 2 characters to search
+          </motion.div>
+        )}
       </motion.div>
 
       {/* Active Filters Display */}

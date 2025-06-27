@@ -60,7 +60,7 @@ const initialState: MoviesState = {
   currentPage: 1,
 };
 
-const API_KEY = process.env.API_KEY!; 
+const API_KEY = process.env.NEXT_PUBLIC_API_KEY!;
 
 export const searchMovies = createAsyncThunk(
   'movies/searchMovies',
@@ -70,13 +70,13 @@ export const searchMovies = createAsyncThunk(
     year?: string; 
     type?: 'movie' | 'series' | 'episode';
   }) => {
-    if (!query.trim()) {
+    if (!query.trim() || query.trim().length < 2) {
       return { Search: [], totalResults: '0', Response: 'True' };
     }
     
     const params = new URLSearchParams({
       apikey: API_KEY,
-      s: encodeURIComponent(query),
+      s: encodeURIComponent(query.trim()),
       page: page.toString(),
     });
 

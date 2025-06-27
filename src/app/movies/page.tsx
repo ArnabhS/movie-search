@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '@/hooks/index';
 import { searchMovies, setSearchQuery, setSearchFilters, clearMovies } from '@/lib/features/movies/moviesSlice';
 import { MovieCard } from '@/components/movie-card';
@@ -13,7 +13,7 @@ import { HeroHighlight, Highlight } from '@/components/ui/hero-highlight';
 import { Film } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const POPULAR_SEARCHES = ['Avengers', 'Batman', 'Star Wars', 'Marvel', 'Harry Potter'];
+const POPULAR_SEARCHES = ['Avengers', 'Batman', 'Star Wars', 'Marvel'];
 
 interface SearchFilters {
   query: string;
@@ -26,21 +26,31 @@ export default function MoviesPage() {
   const { movies, loading, error, totalResults } = useAppSelector((state) => state.movies);
   const [currentFilters, setCurrentFilters] = useState<SearchFilters>({ query: '' });
   const [hasSearched, setHasSearched] = useState(false);
+  const lastSearchRef = useRef('');
 
   const handleSearch = useCallback((filters: SearchFilters) => {
+    const searchKey = `${filters.query.trim()}-${filters.year || ''}-${filters.type || ''}`;
+    
+    // Prevent duplicate searches
+    if (searchKey === lastSearchRef.current) {
+      return;
+    }
+    
     setCurrentFilters(filters);
     dispatch(setSearchQuery(filters.query));
     dispatch(setSearchFilters({ year: filters.year, type: filters.type }));
     
-    if (filters.query.trim()) {
+    if (filters.query.trim().length >= 2) {
       dispatch(searchMovies({ 
         query: filters.query, 
         year: filters.year, 
         type: filters.type 
       }));
+      lastSearchRef.current = searchKey;
       setHasSearched(true);
-    } else {
+    } else if (filters.query.trim().length === 0) {
       dispatch(clearMovies());
+      lastSearchRef.current = '';
       setHasSearched(false);
     }
   }, [dispatch]);
@@ -104,7 +114,7 @@ export default function MoviesPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.8 }}
           >
-            <AdvancedSearchBar onSearch={handleSearch} initialFilters={currentFilters} />
+            <AdvancedSearchBar onSearch={handleSearch} />
           </motion.div>
           
           <AnimatePresence>
