@@ -37,6 +37,10 @@ interface MoviesState {
   movies: Movie[];
   movieDetails: { [key: string]: MovieDetails };
   searchQuery: string;
+  searchFilters: {
+    year?: string;
+    type?: 'movie' | 'series' | 'episode';
+  };
   loading: boolean;
   detailsLoading: boolean;
   error: string | null;
@@ -48,6 +52,7 @@ const initialState: MoviesState = {
   movies: [],
   movieDetails: {},
   searchQuery: '',
+  searchFilters: {},
   loading: false,
   detailsLoading: false,
   error: null,
@@ -59,14 +64,26 @@ const API_KEY = 'e7d7338b';
 
 export const searchMovies = createAsyncThunk(
   'movies/searchMovies',
-  async ({ query, page = 1 }: { query: string; page?: number }) => {
+  async ({ query, page = 1, year, type }: { 
+    query: string; 
+    page?: number; 
+    year?: string; 
+    type?: 'movie' | 'series' | 'episode';
+  }) => {
     if (!query.trim()) {
       return { Search: [], totalResults: '0', Response: 'True' };
     }
     
-    const response = await fetch(
-      `https://www.omdbapi.com/?apikey=${API_KEY}&s=${encodeURIComponent(query)}&page=${page}`
-    );
+    const params = new URLSearchParams({
+      apikey: API_KEY,
+      s: encodeURIComponent(query),
+      page: page.toString(),
+    });
+
+    if (year) params.append('y', year);
+    if (type) params.append('type', type);
+    
+    const response = await fetch(`https://www.omdbapi.com/?${params}`);
     const data = await response.json();
     
     if (data.Response === 'False') {
@@ -99,6 +116,9 @@ const moviesSlice = createSlice({
   reducers: {
     setSearchQuery: (state, action: PayloadAction<string>) => {
       state.searchQuery = action.payload;
+    },
+    setSearchFilters: (state, action: PayloadAction<{ year?: string; type?: 'movie' | 'series' | 'episode' }>) => {
+      state.searchFilters = action.payload;
     },
     clearMovies: (state) => {
       state.movies = [];
@@ -143,5 +163,5 @@ const moviesSlice = createSlice({
   },
 });
 
-export const { setSearchQuery, clearMovies, clearError } = moviesSlice.actions;
+export const { setSearchQuery, setSearchFilters, clearMovies, clearError } = moviesSlice.actions;
 export default moviesSlice.reducer;

@@ -10,8 +10,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Calendar, Clock, Globe, Award, Star } from 'lucide-react';
+import { DottedBackground } from '@/components/ui/dotted-background';
+import { ArrowLeft, Calendar, Clock, Globe, Award, Star, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 
 export default function MovieDetailsPage() {
   const params = useParams();
@@ -54,7 +56,11 @@ export default function MovieDetailsPage() {
 
   if (error || !movie) {
     return (
-      <div className="min-h-screen bg-background">
+      <motion.div 
+        className="min-h-screen bg-background"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
         <Header />
         <div className="max-w-6xl mx-auto px-4 py-8">
           <Button
@@ -65,34 +71,58 @@ export default function MovieDetailsPage() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Movies
           </Button>
-          <div className="text-center py-12">
+          <motion.div 
+            className="text-center py-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-destructive/10 rounded-full mb-4">
+              <AlertCircle className="h-8 w-8 text-destructive" />
+            </div>
             <h3 className="text-lg font-semibold mb-2">Movie not found</h3>
             <p className="text-muted-foreground">
               {error || 'The movie you are looking for could not be found.'}
             </p>
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <motion.div 
+      className="min-h-screen bg-background"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <Header />
       
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          className="mb-8 hover:bg-primary/10"
+      <DottedBackground containerClassName="min-h-screen" density="light" interactive={false}>
+        <div className="max-w-6xl mx-auto px-4 py-8">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
         >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Movies
-        </Button>
+          <Button
+            variant="ghost"
+            onClick={() => router.back()}
+            className="mb-8 hover:bg-primary/10"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Movies
+          </Button>
+        </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Movie Poster */}
-          <div className="lg:col-span-1">
+          <motion.div 
+            className="lg:col-span-1"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 }}
+          >
             <div className="relative aspect-[2/3] rounded-lg overflow-hidden shadow-2xl">
               {movie.Poster && movie.Poster !== 'N/A' ? (
                 <Image
@@ -108,12 +138,22 @@ export default function MovieDetailsPage() {
                 </div>
               )}
             </div>
-          </div>
+           
+          </motion.div>
 
           {/* Movie Details */}
-          <div className="lg:col-span-2 space-y-6">
+          <motion.div 
+            className="lg:col-span-2 space-y-6"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4 }}
+          >
             {/* Title and Year */}
-            <div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
               <h1 className="text-4xl font-bold tracking-tight mb-2">
                 {movie.Title}
               </h1>
@@ -132,53 +172,83 @@ export default function MovieDetailsPage() {
                   <Badge variant="secondary">{movie.Rated}</Badge>
                 )}
               </div>
-            </div>
+            </motion.div>
 
             {/* Rating */}
-            <div className="space-y-3">
+            <motion.div 
+              className="space-y-3"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+            >
               <h3 className="text-lg font-semibold">Your Rating</h3>
               <StarRating movieId={movie.imdbID} />
-            </div>
+            </motion.div>
 
             {/* IMDb Rating */}
             {movie.imdbRating !== 'N/A' && (
-              <div className="flex items-center gap-2">
+              <motion.div 
+                className="flex items-center gap-2"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.7, type: "spring" }}
+              >
                 <Star className="h-5 w-5 text-yellow-500 fill-current" />
                 <span className="text-lg font-semibold">{movie.imdbRating}/10</span>
                 <span className="text-muted-foreground">
                   ({movie.imdbVotes} votes)
                 </span>
-              </div>
+              </motion.div>
             )}
 
             {/* Genre */}
             {movie.Genre !== 'N/A' && (
-              <div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
+              >
                 <h3 className="text-lg font-semibold mb-2">Genre</h3>
                 <div className="flex flex-wrap gap-2">
-                  {movie.Genre.split(', ').map((genre) => (
-                    <Badge key={genre} variant="outline">
-                      {genre}
-                    </Badge>
+                  {movie.Genre.split(', ').map((genre, index) => (
+                    <motion.div
+                      key={genre}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.9 + index * 0.1 }}
+                    >
+                      <Badge variant="outline">
+                        {genre}
+                      </Badge>
+                    </motion.div>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             )}
 
             {/* Plot */}
             {movie.Plot !== 'N/A' && (
-              <div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.0 }}
+              >
                 <h3 className="text-lg font-semibold mb-2">Plot</h3>
                 <p className="text-muted-foreground leading-relaxed">
                   {movie.Plot}
                 </p>
-              </div>
+              </motion.div>
             )}
 
             <Separator />
 
             {/* Additional Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 gap-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.1 }}
+            >
               {movie.Director !== 'N/A' && (
                 <div>
                   <h4 className="font-semibold mb-1">Director</h4>
@@ -212,30 +282,39 @@ export default function MovieDetailsPage() {
                   </div>
                 </div>
               )}
-            </div>
+            </motion.div>
 
             {/* External Ratings */}
             {movie.Ratings && movie.Ratings.length > 0 && (
-              <div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.2 }}
+              >
                 <h3 className="text-lg font-semibold mb-3">External Ratings</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {movie.Ratings.map((rating, index) => (
-                    <div
+                    <motion.div
                       key={index}
                       className="p-3 bg-muted/50 rounded-lg text-center"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 1.3 + index * 0.1 }}
+                      whileHover={{ scale: 1.05 }}
                     >
                       <p className="text-sm text-muted-foreground mb-1">
                         {rating.Source}
                       </p>
                       <p className="font-semibold">{rating.Value}</p>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             )}
-          </div>
+          </motion.div>
         </div>
-      </div>
-    </div>
+        </div>
+      </DottedBackground>
+    </motion.div>
   );
 }

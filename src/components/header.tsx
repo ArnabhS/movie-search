@@ -6,7 +6,7 @@ import { Film } from 'lucide-react';
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-8">
       <div className="container flex h-16 items-center justify-between">
         <Link href="/movies" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
           <div className="flex items-center justify-center w-8 h-8 bg-primary rounded-lg">
