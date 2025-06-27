@@ -60,7 +60,7 @@ const initialState: MoviesState = {
   currentPage: 1,
 };
 
-const API_KEY = 'e7d7338b'; 
+const API_KEY = process.env.API_KEY!; 
 
 export const searchMovies = createAsyncThunk(
   'movies/searchMovies',
